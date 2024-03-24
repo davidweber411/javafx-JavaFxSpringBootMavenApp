@@ -15,8 +15,10 @@ public class Todo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "title")
     private String title;
 
 }
