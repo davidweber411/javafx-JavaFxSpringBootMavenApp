@@ -1,9 +1,12 @@
 package com.wedasoft.javafxspringbootmavenapp.views;
 
-import javafx.application.HostServices;
+import com.wedasoft.javafxspringbootmavenapp.persistence.hobby.Todo;
+import com.wedasoft.javafxspringbootmavenapp.persistence.hobby.TodoRepository;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +14,35 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UiController {
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    private final HostServices hostServices; // TODO: WORKS, BUT DISPLAYS AN ERROR IN THE EDITOR, WTH.
+    private final TodoRepository todoRepository;
 
     @FXML
-    public Label label;
+    public ListView<Todo> todosListView;
     @FXML
-    public Button button;
+    public TextField todoTf;
 
     @FXML
     public void initialize() {
-        this.button.setOnAction(e -> this.label.setText(this.hostServices.getDocumentBase()));
+        todosListView.setItems(FXCollections.observableArrayList(todoRepository.findAll()));
+    }
+
+    public void onExitMenuItemClick() {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    public void onAddTodoBtnClick() {
+        todoRepository.save(new Todo(null, todoTf.getText()));
+        updateTodosListView();
+    }
+
+    public void onDeleteAllTodosBtnClick() {
+        todoRepository.deleteAll();
+        updateTodosListView();
+    }
+
+    private void updateTodosListView() {
+        todosListView.setItems(FXCollections.observableArrayList(todoRepository.findAll()));
     }
 
 }
