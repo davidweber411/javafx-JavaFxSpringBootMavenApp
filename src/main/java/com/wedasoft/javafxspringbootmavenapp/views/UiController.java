@@ -1,7 +1,7 @@
 package com.wedasoft.javafxspringbootmavenapp.views;
 
-import com.wedasoft.javafxspringbootmavenapp.persistence.hobby.Todo;
-import com.wedasoft.javafxspringbootmavenapp.persistence.hobby.TodoRepository;
+import com.wedasoft.javafxspringbootmavenapp.persistence.todo.Todo;
+import com.wedasoft.javafxspringbootmavenapp.persistence.todo.TodoRepository;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;

@@ -1,4 +1,4 @@
-package com.wedasoft.javafxspringbootmavenapp.persistence.hobby;
+package com.wedasoft.javafxspringbootmavenapp.persistence.todo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
