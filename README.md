@@ -1,8 +1,23 @@
-# Description
+<style>
+    .github-header-underline {
+        height: 3px;
+        width: 84px;
+        background-color: #0a0a0a;
+        margin-top: 10px;
+        /*margin-left: auto;*/
+        /*margin-right: auto;*/
+    }
+</style>
+
+### Description
+
+<div class="github-header-underline"></div>
 
 A simple running application based on JavaFX, Spring Boot and Maven.
 
 ### Used technologies
+
+<div class="github-header-underline"></div>
 
 | Technology    | Version               |
 |---------------|-----------------------|
@@ -15,6 +30,8 @@ A simple running application based on JavaFX, Spring Boot and Maven.
 
 ### Features
 
+<div class="github-header-underline"></div>
+
 | Feature                   | Available | How to use                    |
 |---------------------------|-----------|-------------------------------|
-| Create an executable JAR. | Yes.      | Use the maven goal "package". | 
+| Create an executable JAR. | Yes.      | Use the maven goal "package". |
