@@ -13,6 +13,8 @@
                 <Menu mnemonicParsing="false" text="File">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#onExitMenuItemClick" text="Exit"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onOpenDialogMenuItemClick"
+                                  text="Open non-spring component dialog"/>
                     </items>
                 </Menu>
             </menus>

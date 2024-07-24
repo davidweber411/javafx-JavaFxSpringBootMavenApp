@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,38 +18,51 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @SpringBootApplication
+@Slf4j
 public class JfxSpringBootAppLauncher {
 
+    public static final String LOG_PREFIX = "JavaFx Spring Boot lifecycle: ";
+    public static final String SPLASHSCREEN_CLASS_PATH = "com.wedasoft.javafxspringbootmavenapp.SplashScreenPreloader";
+
     public static void main(String[] args) {
+        log.info(LOG_PREFIX + "Starting application via main method...");
+
+        log.info(LOG_PREFIX + "Set full qualified class name as system property for defining the splash screen preloader.");
+        System.setProperty("javafx.preloader", SPLASHSCREEN_CLASS_PATH);
+
+        log.info(LOG_PREFIX + "Launching the JavaFx application.");
         Application.launch(JfxSpringBootApp.class, args);
     }
 
     public static class JfxSpringBootApp extends Application {
 
-        private ConfigurableApplicationContext context;
+        private static ConfigurableApplicationContext springApplicationContext;
 
         @Override
         public void init() {
-            ApplicationContextInitializer<GenericApplicationContext> initializer = applicationContext -> {
-                applicationContext.registerBean(Application.class, () -> JfxSpringBootApp.this);
-                applicationContext.registerBean(Parameters.class, this::getParameters);
-                applicationContext.registerBean(HostServices.class, this::getHostServices);
-            };
-
-            this.context = new SpringApplicationBuilder()
+            log.info(LOG_PREFIX + "Executing overridden 'init()' of JavaFx Application...");
+            log.info(LOG_PREFIX + "Creating the spring application context.");
+            springApplicationContext = new SpringApplicationBuilder()
                     .sources(JfxSpringBootAppLauncher.class)
-                    .initializers(initializer)
+                    .initializers((ApplicationContextInitializer<GenericApplicationContext>) applicationContext -> {
+                        applicationContext.registerBean(Application.class, () -> this);
+                        applicationContext.registerBean(Parameters.class, this::getParameters);
+                        applicationContext.registerBean(HostServices.class, this::getHostServices);
+                    })
                     .run(getParameters().getRaw().toArray(new String[0]));
         }
 
         @Override
         public void start(Stage primaryStage) {
-            this.context.publishEvent(new StageIsReadyEvent(primaryStage));
+            log.info(LOG_PREFIX + "Executing overridden 'start()' of JavaFx Application...");
+            log.info(LOG_PREFIX + "Publishing event 'JfxApplicationStartEvent'.");
+            springApplicationContext.publishEvent(new JfxApplicationStartEvent(primaryStage));
         }
 
         @Override
         public void stop() {
-            this.context.close();
+            log.info(LOG_PREFIX + "Executing overridden 'stop()' of JavaFx Application...");
+            springApplicationContext.close();
             Platform.exit();
             System.exit(0);
         }
@@ -56,44 +70,50 @@ public class JfxSpringBootAppLauncher {
     }
 
     @Component
-    public static class JfxSpringBootStageIsReadyListener implements ApplicationListener<StageIsReadyEvent> {
+    public static class JfxApplicationStartEventListener implements ApplicationListener<JfxApplicationStartEvent> {
 
         @Value("${spring.application.name}")
         private final String applicationTitle;
-        private final ApplicationContext applicationContext;
+        private final ApplicationContext springApplicationContext;
 
-        public JfxSpringBootStageIsReadyListener(
+        public JfxApplicationStartEventListener(
                 @Value("${spring.application.name}") String applicationTitle,
-                ApplicationContext applicationContext) {
+                ApplicationContext springApplicationContext) {
 
             this.applicationTitle = applicationTitle;
-            this.applicationContext = applicationContext;
+            this.springApplicationContext = springApplicationContext;
         }
 
         @Override
-        public void onApplicationEvent(StageIsReadyEvent event) {
+        public void onApplicationEvent(JfxApplicationStartEvent event) {
             try {
+                log.info(LOG_PREFIX + "Computing 'JfxApplicationStartEvent'...");
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/wedasoft/javafxspringbootmavenapp/views/ui.fxml"));
-                fxmlLoader.setControllerFactory(applicationContext::getBean);
+                fxmlLoader.setControllerFactory(springApplicationContext::getBean);
                 Parent root = fxmlLoader.load();
                 Scene scene = new Scene(root, 600, 600);
                 Stage stage = event.getStage();
                 stage.setScene(scene);
                 stage.setTitle(this.applicationTitle);
                 stage.show();
+                log.info(LOG_PREFIX + "JavaFx Spring boot application started.");
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+            if (SplashScreenPreloader.stage != null) {
+                log.info(LOG_PREFIX + "Closing splash screen.");
+                SplashScreenPreloader.stage.close();
             }
         }
 
     }
 
-    public static class StageIsReadyEvent extends ApplicationEvent {
+    public static class JfxApplicationStartEvent extends ApplicationEvent {
         public Stage getStage() {
             return (Stage) getSource();
         }
 
-        public StageIsReadyEvent(Stage source) {
+        public JfxApplicationStartEvent(Stage source) {
             super(source);
         }
     }

@@ -2,18 +2,29 @@ package com.wedasoft.javafxspringbootmavenapp.views;
 
 import com.wedasoft.javafxspringbootmavenapp.persistence.todo.Todo;
 import com.wedasoft.javafxspringbootmavenapp.persistence.todo.TodoRepository;
+import com.wedasoft.javafxspringbootmavenapp.services.JfxUiService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.geometry.Dimension2D;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-public class UiController {
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@RequiredArgsConstructor
+public class UiController implements Initializable {
+
+    private final JfxUiService jfxUiService;
     private final TodoRepository todoRepository;
 
     @FXML
@@ -21,8 +32,8 @@ public class UiController {
     @FXML
     public TextField todoTf;
 
-    @FXML
-    public void initialize() {
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         todosListView.setItems(FXCollections.observableArrayList(todoRepository.findAll()));
     }
 
@@ -43,6 +54,16 @@ public class UiController {
 
     private void updateTodosListView() {
         todosListView.setItems(FXCollections.observableArrayList(todoRepository.findAll()));
+    }
+
+    public void onOpenDialogMenuItemClick() throws IOException {
+        jfxUiService.createAndShowFxmlDialog(
+                "Non-Spring component dialog",
+                true,
+                true,
+                getClass().getResource("/com/wedasoft/javafxspringbootmavenapp/views/dialog.fxml"),
+                new Dimension2D(600, 400),
+                dialogController -> ((DialogController) dialogController).init());
     }
 
 }
